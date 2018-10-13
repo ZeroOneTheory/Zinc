@@ -16,16 +16,20 @@ public class PlayerController : MonoBehaviour {
     float speedSmoothVelocity;
     float currentSpeed;
     float velocityY;
+    float headRotation;
 
-    Animator animator;
-    Transform cameraT;
-    CharacterController controller;
+    public Animator animator;
+    public Transform cameraT;
+    public Transform head;
+    public CharacterController controller;
+
+    Interactable focus; 
 
 	void Start () {
         animator = GetComponent<Animator>();
-        cameraT = Camera.main.transform;
         controller = GetComponent<CharacterController>();
-	}
+        cameraT = FindObjectOfType<Camera>().transform;
+    }
 	
 
 	void Update () {
@@ -36,13 +40,14 @@ public class PlayerController : MonoBehaviour {
         bool running = Input.GetKey(KeyCode.LeftShift);
         Move(inputDir, running);
 
-        if (Input.GetMouseButtonDown(0)) {
+        if (Input.GetKeyDown(KeyCode.Space)) {
             Jump();
         }
 
         //Animator
         float animationSpeedPercent = ((running) ? currentSpeed / runSpeed : currentSpeed / walkSpeed * .5f);
         animator.SetFloat("speedPercent", animationSpeedPercent, speedSmoothTime, Time.deltaTime);
+        HeadFaceTarget(); // Rotates head to focus
 
 
     }
@@ -83,5 +88,17 @@ public class PlayerController : MonoBehaviour {
         }
         if(airControlPerc == 0) { return float.MaxValue; }
         return smoothTime / airControlPerc;
+    }
+
+
+    void HeadFaceTarget() {
+
+       if (focus != null) {
+            // Rotate to face focus object
+            Debug.Log("focused on " + focus.name);
+        } else {
+            head.rotation = transform.rotation;
+        }
+
     }
 }
