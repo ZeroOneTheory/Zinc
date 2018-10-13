@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraController : MonoBehaviour {
-
+public class CameraTarget : MonoBehaviour {
 
     public bool lockCursor;
     public float yaw;
@@ -29,18 +28,22 @@ public class CameraController : MonoBehaviour {
     }
 
 
-    void LateUpdate () {
+    void LateUpdate() {
+        CameraUpdate();
+    }
+
+    public virtual void CameraUpdate() {
         // Input from Mouse
-        yaw += Input.GetAxis("Mouse X")* mouseSensitivity;
-        pitch -= Input.GetAxis("Mouse Y")* mouseSensitivity;
+        yaw += Input.GetAxis("Mouse X") * mouseSensitivity;
+        pitch -= Input.GetAxis("Mouse Y") * mouseSensitivity;
         pitch = Mathf.Clamp(pitch, pitchMinMax.x, pitchMinMax.y);
         // control Zoom
         currentZoom -= Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
-        currentZoom = Mathf.Clamp(currentZoom, zoomMinMax.x,zoomMinMax.y);
+        currentZoom = Mathf.Clamp(currentZoom, zoomMinMax.x, zoomMinMax.y);
         //rotaion around mouse
         currentRotation = Vector3.SmoothDamp(currentRotation, new Vector3(pitch, yaw), ref rotationSmoothVelocity, rotationSmoothTime);
         transform.eulerAngles = currentRotation;
 
         transform.position = target.position - transform.forward * currentZoom;
-	}
+    }
 }

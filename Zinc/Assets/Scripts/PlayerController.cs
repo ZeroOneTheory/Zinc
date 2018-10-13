@@ -12,18 +12,23 @@ public class PlayerController : MonoBehaviour {
     public float jumpHeight = 1;
     [Range(0,1)]
     public float airControlPerc;
+    bool running;
     float turnSmoothVelocity;
     float speedSmoothVelocity;
     float currentSpeed;
     float velocityY;
+    float butCooler = .9f;
+    float butCount = 0;
     float headRotation;
 
     public Animator animator;
     public Transform cameraT;
     public Transform head;
     public CharacterController controller;
+    Interactable focus;
 
-    Interactable focus; 
+    public delegate void onCameraModeChange();
+    public onCameraModeChange cameraChangedCallback;
 
 	void Start () {
         animator = GetComponent<Animator>();
@@ -37,12 +42,33 @@ public class PlayerController : MonoBehaviour {
         Vector2 input = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         Vector2 inputDir = input.normalized;
 
-        bool running = Input.GetKey(KeyCode.LeftShift);
-        Move(inputDir, running);
+        // Double tap to run
+        if (!Input.GetKey(KeyCode.LeftShift)) {
+            if (Input.GetKeyDown(KeyCode.W)) {
+                if (butCooler > 0 && butCount == 1) {
+                    running = true;
+                }
+                else {
+                    butCooler = .9f;
+                    butCount += 1;
+                }
+            } 
+        } else { running = Input.GetKey(KeyCode.LeftShift);  }
+        if (butCooler > 0) { butCooler -=1*Time.deltaTime; } else { butCount = 0;  }
 
+        // Movement
+        Move(inputDir, running);
+        if (input.magnitude == 0) { running = false; }
+        // Jumping 
         if (Input.GetKeyDown(KeyCode.Space)) {
             Jump();
         }
+
+        if (Input.GetMouseButtonDown(1)) {
+            Debug.Log("Throwing");
+            if (cameraChangedCallback != null) { cameraChangedCallback.Invoke(); }
+        }
+        
 
         //Animator
         float animationSpeedPercent = ((running) ? currentSpeed / runSpeed : currentSpeed / walkSpeed * .5f);
